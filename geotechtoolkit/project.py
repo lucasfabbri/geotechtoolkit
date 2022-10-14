@@ -2,10 +2,11 @@
 import numpy as np
 import pandas as pd
 import pyvista as pv
-from visualization_utils import plot_collars, plot_features
 
-from geology import Surface, GeologicalModel
-from CONSTS import MAX_ELEVATION, MIN_ELEVATION, FEATURE_STYLES
+from .visualization_utils import plot_collars, plot_features
+
+from .geology import Surface, GeologicalModel
+from .consts import MAX_ELEVATION, MIN_ELEVATION, FEATURE_STYLES
 
 
 class Investigation:

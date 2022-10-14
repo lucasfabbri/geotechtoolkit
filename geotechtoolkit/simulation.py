@@ -6,7 +6,7 @@ import random
 
 from shapely.geometry import Point
 
-from utils import get_point_on_vector, get_length
+from .utils import get_point_on_vector, get_length
 
 
 def simulate_intersection_feature(investigation, surface, description):

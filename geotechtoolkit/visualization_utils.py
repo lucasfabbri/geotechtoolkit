@@ -4,7 +4,7 @@ import numpy as np
 from shapely.geometry import LineString
 
 
-from CONSTS import FEATURE_STYLES
+from .consts import FEATURE_STYLES
 
 
 def collar_cone(point, direction=(0, 0, -1)):

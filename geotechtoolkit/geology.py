@@ -2,8 +2,9 @@ import numpy as np
 import pyvista as pv
 from pykrige.uk import UniversalKriging
 
+
 def get_x_y_bounds(points):
-    """ Get the maximum and minimum of x and y coordinates
+    """Get the maximum and minimum of x and y coordinates
     Args:
         points(numpy.array): Numpy array of points
     Returns:
@@ -13,27 +14,30 @@ def get_x_y_bounds(points):
         ymax (float): Maximum y coordinate
     """
 
-    xmin = float(np.min(points[:,0]))
-    xmax = float(np.max(points[:,0]))
-    ymin = float(np.min(points[:,1]))
-    ymax = float(np.max(points[:,1]))
+    xmin = float(np.min(points[:, 0]))
+    xmax = float(np.max(points[:, 0]))
+    ymin = float(np.min(points[:, 1]))
+    ymax = float(np.max(points[:, 1]))
 
-    return xmin,xmax,ymin,ymax
+    return xmin, xmax, ymin, ymax
 
-class GeologyElement():
-    """ Base class for all geolgical elements containing metadata
+
+class GeologyElement:
+    """Base class for all geolgical elements containing metadata
 
     Attributes:
         name (str): Name of element
         comment (str): Relevant comment for element
-    
+
     """
-    def __init__(self,name,comment):
+
+    def __init__(self, name, comment):
         self.name = name
         self.comment = comment
 
-class Interpolation():
-    """ Class to store interpolated surface 
+
+class Interpolation:
+    """Class to store interpolated surface
 
     Contains scalar field representing uncetainty
 
@@ -42,11 +46,6 @@ class Interpolation():
         surface (PyVista Gridded Data): Grid representing the interpolated surface
 
     """
-<<<<<<< Updated upstream
-    def __init__(self,parameters,surface):
-        self.parameters = parameters
-        self.surface = surface    
-=======
 
     def __init__(self, metadata, surface):
         self.metadata = metadata
@@ -108,45 +107,35 @@ def compute_distance_to_points(surface, original_points):
         distances.append(min(localdistances))
     return distances
 
->>>>>>> Stashed changes
 
 class Surface(GeologyElement):
     """Geological surfaces without holes, i.e open surfaces.
 
     Can represent simplified boundaries between strata, bedrock surfaces, discontinuities etc.
 
-    Attributes: 
+    Attributes:
         data_source_type (str): Descriptor of what kind of data is the source for the surface.
-<<<<<<< Updated upstream
-        interpolation (Interpolation): Interpolation subclass
-            parameters (dict): Metadata about the interpolation method used
-            surface (PyVista Gridded Data): Grid representing the interpolated surface
-    """
-    def __init__(self,name,comment, data_souce_type):
-        super().__init__(name,comment)
-=======
         surface (pyvista.PolyData): PyVista object representing the surface
     """
 
     def __init__(self, name, surface=False, comment=None, data_souce_type=None):
         super().__init__(name, comment)
->>>>>>> Stashed changes
         self.data_souce_type = data_souce_type
         if surface:
             self.surface = surface
             self.interpolation = False
 
-    def triangulate(self,points):
+    def triangulate(self, points):
 
-        """ Delaunay 2D triangulation using pyvista
-            
-            Args:
-                points (np.array): Numpy array of points
+        """Delaunay 2D triangulation using pyvista
 
-            Attributes:
+        Args:
+            points (np.array): Numpy array of points
+
+        Attributes:
 
         """
-        parameters = {"type":"triangulate","params":{"points":points}}
+        parameters = {"type": "triangulate", "params": {"points": points}}
         if len(points) < 3:
             # TODO: plane that connects 2 points or is planar at 1 z coord
             print("Cannot interpolate surface from two points")
@@ -156,26 +145,6 @@ class Surface(GeologyElement):
             surf = pv.PolyData(verticies, faces)
         else:
             cloud = pv.PolyData(points)
-<<<<<<< Updated upstream
-            surf = cloud.delaunay_2d()
-
-        #TODO: Uncertainty in triangles based on (?)
-
-        self.interpolation = Interpolation(parameters,surf)
- 
-    def krige(self,
-            points,
-            resolution = 1,
-            nlags = 8,
-            weight = True,
-            variogram_model = "gaussian",
-            exact_values=True,
-            drift_terms = ["regional_linear"],
-            exrapolation_buffer = (0,0,0),
-            boundary_polyline=False,
-            ):
-        """ Interpolate by kriging using PyKriges UniversialKriging method       
-=======
             surface = cloud.delaunay_2d()
         metadata = {
             "type": "triangulate",
@@ -197,11 +166,10 @@ class Surface(GeologyElement):
         variogram_model="linear",
         exact_values=True,
         drift_terms=None,
-        extrapolation_buffer=EXTRAPOLATION_BUFFER,
+        extrapolation_buffer=(0, 0, 0),
         domain=None,
     ):
         """Interpolate by kriging using PyKriges UniversialKriging method
->>>>>>> Stashed changes
         Overwrites existing interpolation for the model
 
         Args:
@@ -215,47 +183,44 @@ class Surface(GeologyElement):
             boundary_polyline (optional,LineString): Shapely LineString or similar format defining outer
                                             boundary to clip surface against. Defaults to False
         """
-        
+
         UK = UniversalKriging(
-            points[:,0],
-            points[:,1],
-            points[:,2],
+            points[:, 0],
+            points[:, 1],
+            points[:, 2],
             variogram_model=variogram_model,
-            nlags = nlags,
+            nlags=nlags,
             weight=weight,
             drift_terms=drift_terms,
-            exact_values=exact_values
+            exact_values=exact_values,
         )
 
-        xmin,xmax,ymin,ymax = get_x_y_bounds(points)
+        if domain:
+            xmin = round(domain[0], 2)
+            xmax = round(domain[1], 2)
+            ymin = round(domain[2], 2)
+            ymax = round(domain[3], 2)
+        else:
+            xmin, xmax, ymin, ymax = get_x_y_bounds(points)
 
-        X = np.arange(xmin-exrapolation_buffer[0],xmax + exrapolation_buffer[0],resolution)
-        Y = np.arange(ymin-exrapolation_buffer[1],ymax+exrapolation_buffer[1],resolution)
-        print(xmin,xmax,ymin,ymax)
+        X = np.arange(
+            xmin - extrapolation_buffer[0], xmax + extrapolation_buffer[0], resolution
+        )
+        Y = np.arange(
+            ymin - extrapolation_buffer[1], ymax + extrapolation_buffer[1], resolution
+        )
 
-        Z, ss = UK.execute("grid",X,Y)
+        Z, ss = UK.execute("grid", X, Y)
         Z = np.squeeze(np.array(Z))
 
-        
-        print(X.size,Y.size,Z.size)
-        
-        #TODO: Use structured grid grid = pv.StructuredGrid(X, Y, Z)
+        # TODO: Use structured grid grid = pv.StructuredGrid(X, Y, Z)
 
         UK_xyz = []
         for i_y, row in enumerate(Z):
-            for i_x, zval in enumerate(row):
-                UK_xyz.append([X[i_x], Y[i_y], zval])
-
-        
-
+            UK_xyz.extend([X[i_x], Y[i_y], zval] for i_x, zval in enumerate(row))
         UK_xyz = np.asarray(UK_xyz)
 
         prediction = pv.PolyData(UK_xyz)
-<<<<<<< Updated upstream
-        print("Meshing kriged grid")
-        grid = prediction.delaunay_2d()
-        print("Mesh created")
-=======
         surface = prediction.delaunay_2d()
         metadata = {
             "type": "krige",
@@ -284,29 +249,8 @@ class Surface(GeologyElement):
             self.surface[type] = np.asarray(
                 self.interpolation.metadata["uncertainty"][type]
             )
->>>>>>> Stashed changes
 
-        parameters = {
-            "type":"krige",
-            "params":{
-                "points":points,
-                "resolution":resolution,
-                "nlags":nlags,
-                "weight":weight,
-                "variogram_model":variogram_model,
-                "exact_values":exact_values,
-                "drift_terms":drift_terms,
-                
-            }
-        }
 
-<<<<<<< Updated upstream
-#        if boundary_polyline:
-#            #TODO: clip by surface based on extruded surface from polyline StructuredGrid.clip_surface(surface[, ...])
-        
-        #TODO: Uncertainty based on
-        self.interpolation = Interpolation(parameters,grid)
-=======
 class GeologicalModel:
     """Class containing all interpreted geological elements
 
@@ -320,7 +264,7 @@ class GeologicalModel:
         points=None,
         zMax=None,
         zMin=None,
-        extrapolation_buffer=EXTRAPOLATION_BUFFER,
+        extrapolation_buffer=(0, 0, 0),
         domain=None,
     ):
         """Initialize an area based on either a set of coordinates an an extrapolation buffer, or specify a domain directly.
@@ -351,6 +295,7 @@ class GeologicalModel:
             self.yMax = round(ymax + extrapolation_buffer[1], 2)
             self.zMin = round(zmin - extrapolation_buffer[2], 2)
             self.zMax = round(zmax + extrapolation_buffer[2], 2)
+
         if zMax:
             self.zMax = zMax
         if zMin:
@@ -428,4 +373,3 @@ class GeologicalModel:
             arrays.append(array)
         self.grid["unit_index"] = sum(arrays)
         return arrays
->>>>>>> Stashed changes

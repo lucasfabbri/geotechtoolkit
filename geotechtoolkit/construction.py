@@ -15,8 +15,9 @@ class ShallowFoundations:
         self.dictionary = {}
 
     def import_ifc(self, ifc_file, types=None, BOTTOM_NORMAL_THRESHOLD=-0.5):
-        import ifcopenshell.geom
-        from utils import get_length_and_width_rectangle
+        import ifcopenshell
+        from ifcopenshell import geom
+        from .utils import get_length_and_width_rectangle
 
         """ Import shallow foundations into the Project class
 
@@ -29,7 +30,7 @@ class ShallowFoundations:
         if types is None:
             types = ["IfcFooting"]
 
-        settings = ifcopenshell.geom.settings()
+        settings = geom.settings()
         settings.set(settings.USE_WORLD_COORDS, True)
 
         self.list = []
@@ -40,7 +41,7 @@ class ShallowFoundations:
                 globalid = str(attr_dict["GlobalId"])
                 self.list.append((ifctype, globalid))
 
-                shape = ifcopenshell.geom.create_shape(settings, element)
+                shape = geom.create_shape(settings, element)
                 faces = shape.geometry.faces
                 verts = shape.geometry.verts
 
