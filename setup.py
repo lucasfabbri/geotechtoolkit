@@ -1,7 +1,9 @@
 from setuptools import setup
 
 setup(
-  name="geotechtoolkit",
-  version="0.0.1",
-  scripts=["geotechtoolkit"]
+    name="geotechtoolkit",
+    author="Lucas Fabbri",
+    author_email="lucafabbri18@gmail.com",
+    version="0.0.1",
+    packages=["geotechtoolkit"],
 )
